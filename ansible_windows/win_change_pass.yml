@@ -1,0 +1,11 @@
+---
+- name: windows change password
+  hosts: windows
+  vars:
+    usr_name: 'ansible'
+    usr_password: '654321@'
+  tasks:
+    - name: change password
+      ansible.windows.win_user:
+        name: "{{ usr_name }}"
+        password: "{{ usr_password }}"

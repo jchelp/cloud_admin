@@ -1,0 +1,67 @@
+## VLAN UNIDADE MAS 
+
+#Add Interface 
+/interface vlan
+add comment="WIFI-ALUNOS VLAN 200 ADM" interface=BRIDGE-ADM name=VLAN200 vlan-id=200
+add comment="WIFI-VISITANTES VLAN 300 ADM" interface=BRIDGE-ADM name=VLAN300 vlan-id=300
+add comment="WIFI-DISPOSITIVOS VLAN 400 ADM" interface=BRIDGE-ADM name=VLAN400 vlan-id=400
+
+# Add address interface
+/ip address
+add address=10.24.163.254/22 comment="REDE WIFI ALUNOS - VLAN 200" interface=VLAN200 network=10.24.160.0
+add address=10.24.168.254/24 comment="REDE WIFI VISITANTES - VLAN 300" interface=VLAN300 network=10.24.167.0
+add address=10.24.167.254/24 comment="REDE WIFI DISPOSITIVOS - VLAN 400" interface=VLAN400 network=10.24.167.0
+
+
+# Add interface in interface list 
+
+/interface list
+add comment="LISTAS DE VLANS" name=INT-VLAN
+add comment="LANS ADM e PED" name=INT-LAN-SEGURA
+
+
+/interface list member
+add comment=Alunos interface=VLAN200 list=INT-LAN
+add commnet=Visitantes interface=VLAN300 list=INT-LAN
+add comment=Dispositivos interface=VLAN400 list=INT-LAN
+add comment=ALUNOS interface=VLAN200 list=INT-VLAN
+add comment=VISITANTES interface=VLAN300 list=INT-VLAN
+add comment=DISPOSITIVOS interface=VLAN400 list=INT-VLAN
+add comment=ADM interface=BRIDGE-ADM list=INT-LAN-SEGURA
+add comment=PED interface=BRIDGE-PED list=INT-LAN-SEGURA
+add comment=AWS interface=AWS-OPENVPN list=INT-LAN-SEGURA
+add comment=CSC interface=CSC-PAULISTA list=INT-WAN
+
+# add DHCP SERVER
+
+/ip pool
+add name=dhcp_pool_alunos ranges=10.24.160.1-10.24.163.253
+add name=dhcp_pool_visitantes ranges=10.24.168.1-10.24.168.253
+add name=dhcp_pool_dispositivos ranges=10.24.167.1-10.24.167.253
+
+/ip dhcp-server
+add address-pool=dhcp_pool_alunos disabled=no interface=VLAN200 name=dhcp_alunos
+add address-pool=dhcp_pool_visitantes disabled=no interface=VLAN300 name=dhcp_visitantes
+add address-pool=dhcp_pool_dispositivos disabled=no interface=VLAN400 name=dhcp_dispositivos
+
+
+
+/ip dhcp-server network
+add address=10.24.160.0/22 dns-server=10.24.163.254 gateway=10.24.163.254
+add address=10.24.167.0/24 dns-server=10.24.167.254 gateway=10.24.167.254
+add address=10.24.168.0/24 dns-server=10.24.168.254 gateway=10.24.168.254
+
+
+
+# Add rules firewall block forward
+/ip firewall filter
+add action=drop chain=forward comment="DROP VLAN FORWARD REDE PRIVADA" in-interface-list=INT-VLAN out-interface-list=INT-LAN-SEGURA
+add action=drop chain=forward comment="DROP VLAN FORWARD REDE PRIVADA VOLTA" in-interface-list=INT-LAN-SEGURA out-interface-list=INT-VLAN
+
+# Add ip no address list firewall 
+/ip firewall address-list
+add address=10.24.160.0/20 comment="IPS DA REDE LOCAL CSCB" list=rede-local
+
+
+###########################################################################################################################################
+

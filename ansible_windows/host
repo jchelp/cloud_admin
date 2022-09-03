@@ -1,0 +1,9 @@
+[windows]
+windows10 ansible_host=10.6.0.201
+[windows:vars]
+ansible_user="TI"
+ansible_password="20Network.19"
+ansible_port="5985"
+ansible_connection="winrm"
+ansible_winrm_transport="basic"
+ansible_winrm_server_cert_validation="ignore"

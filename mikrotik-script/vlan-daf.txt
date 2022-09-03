@@ -1,0 +1,60 @@
+## VLAN UNIDADE DAF
+
+#Add Interface 
+/interface vlan
+add comment="WIFI-ALUNOS VLAN 200 ADM" interface=BRIDGE-ADM name=VLAN200 vlan-id=200
+add comment="WIFI-VISITANTES VLAN 300 ADM" interface=BRIDGE-ADM name=VLAN300 vlan-id=300
+add comment="WIFI-DISPOSITIVOS VLAN 400 ADM" interface=BRIDGE-ADM name=VLAN400 vlan-id=400
+
+
+# Add address interface
+/ip address
+add address=10.27.39.254/22 comment="REDE WIFI ALUNOS - VLAN 200" interface=VLAN200 network=10.27.36.0
+add address=10.27.41.254/24 comment="REDE WIFI VISITANTES - VLAN 300" interface=VLAN300 network=10.27.41.0
+add address=10.27.40.254/24 comment="REDE WIFI DISPOSITIVOS - VLAN 400" interface=VLAN400 network=10.27.40.0
+
+
+# Add interface in interface list 
+
+/interface list member
+add interface=VLAN200 list=INT-LAN
+add interface=VLAN300 list=INT-LAN
+add interface=VLAN400 list=INT-LAN
+
+# add DHCP
+
+/ip dhcp-server
+add address-pool=dhcp_pool_dispositivos disabled=no interface=VLAN400 name=dhcp_dispositivos
+add address-pool=dhcp_pool_alunos disabled=no interface=VLAN200 name=dhcp_alunos
+add address-pool=dhcp_pool_visitantes disabled=no interface=VLAN300 name=dhcp_visitantes
+add address-pool=dhcp_pool_dispositivos disabled=no interface=VLAN400 name=dhcp_dispositivos
+
+
+
+/ip dhcp-server network
+add address=10.27.36.0/22 dns-server=10.27.39.254 gateway=10.27.39.254
+add address=10.27.41.0/24 dns-server=10.27.41.254 gateway=10.27.41.254
+add address=10.27.40.0/24 dns-server=10.27.40.254 gateway=10.27.40.254
+
+
+
+# Add rules firewall block forward
+/ip firewall filter
+add action=drop chain=forward comment="DROP WIFI ALUNO REDE ADM" dst-address=10.27.32.0/23 src-address=10.27.36.0/22
+add action=drop chain=forward comment="DROP ADM ACESSAR WIFI ALUNOS" dst-address=10.27.36.0/22 src-address=10.27.32.0/23
+add action=drop chain=forward comment="DROP WIFI ALUNO REDE PED " dst-address=10.27.34.0/23 src-address=10.27.36.0/22
+add action=drop chain=forward comment="DROP PED ACESSAR WIFI ALUNOS" dst-address=10.27.36.0/22 src-address=10.27.34.0/23
+add action=drop chain=forward comment="DROP WIFI VISITANTES REDE ADM " dst-address=10.27.32.0/23 src-address=10.27.41.0/24
+add action=drop chain=forward comment="DROP ADM ACESSAR WIFI VISITANTES" dst-address=10.27.41.0/24 src-address=10.27.32.0/23
+add action=drop chain=forward comment="DROP WIFI VISITANTES REDE PED " dst-address=10.27.34.0/23 src-address=10.27.41.0/24
+add action=drop chain=forward comment="DROP PED ACESSAR WIFI VISITANTES" dst-address=10.27.41.0/24 src-address=10.27.34.0/23
+add action=drop chain=forward comment="DROP WIFI DISPOSITIVOS REDE ADM " dst-address=10.27.32.0/23 src-address=10.27.40.0/24
+add action=drop chain=forward comment="DROP ADM ACESSAR WIFI DISPOSITIVOS" dst-address=10.27.40.0/24 src-address=10.27.32.0/23
+add action=drop chain=forward comment="DROP WIFI DISPOSITIVOS REDE PED " dst-address=10.27.34.0/23 src-address=10.27.40.0/24
+add action=drop chain=forward comment="DROP PED ACESSAR WIFI DISPOSITIVOS" dst-address=10.27.40.0/24 src-address=10.27.34.0/23
+
+/ip firewall address-list 
+add address=10.27.36.0/22 comment="DNS MIKROTIK ALUNOS" list=IP_DNS
+add address=10.27.40.0/24 comment="DNS MIKROTIK DISPOSITIVOS" list=IP_DNS
+add address=10.27.41.0/24 comment="DNS MIKROTIK VISITANTES" list=IP_DNS
+
